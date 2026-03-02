@@ -43,12 +43,16 @@ def index():
 def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-# --- NOVA ROTA ADICIONADA AQUI ---
 @app.route('/reset', methods=['POST'])
 def reset():
     """Rota chamada pelo navegador para forçar o reinício do sistema"""
     auth_system.reset_login()
     return jsonify({"status": "success", "message": "Verificação reiniciada com sucesso."})
+
+@app.route('/status')
+def status():
+    """Rota que informa para o HTML se o acesso está pendente, negado ou liberado"""
+    return jsonify({"status": auth_system.access_status})
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
