@@ -126,7 +126,7 @@
             .catch(error => console.error("Erro:", error));
         }
 
-        // NOVO: "Rastreador" que monitora o status do Python a cada 1 segundo (1000 ms)
+        // Rastreador que monitora o status do Python a cada 1 segundo
         setInterval(function() {
             fetch('/status')
             .then(response => response.json())
@@ -134,12 +134,10 @@
                 const videoSection = document.getElementById('video-section');
                 const secretScreen = document.getElementById('secret-screen');
                 
-                // Se o Python disser que o acesso foi liberado...
                 if (data.status === 'GRANTED') {
-                    videoSection.style.display = 'none'; // Esconde o vídeo
-                    secretScreen.style.display = 'block'; // Mostra a tela secreta brilhante
+                    videoSection.style.display = 'none';
+                    secretScreen.style.display = 'block';
                 } else {
-                    // Caso contrário (PENDING ou DENIED), mostra o vídeo normalmente
                     videoSection.style.display = 'block';
                     secretScreen.style.display = 'none';
                 }
