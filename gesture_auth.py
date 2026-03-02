@@ -21,20 +21,22 @@ class GestureAuthenticator:
         self._setup_mediapipe()
 
     def _setup_mediapipe(self):
-        """Baixa o modelo e inicializa o MediaPipe"""
+        """Baixa o modelo e inicializa o MediaPipe no modo VÍDEO"""
         if not os.path.exists(self.MODEL_PATH):
             print("Baixando modelo do MediaPipe...")
             urllib.request.urlretrieve("https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task", self.MODEL_PATH)
 
         BaseOptions = mp.tasks.BaseOptions
         HandLandmarker = mp.tasks.vision.HandLandmarker
+        
+        # MUDANÇA AQUI: RunningMode.VIDEO e redução leve da confiança para priorizar velocidade
         options = mp.tasks.vision.HandLandmarkerOptions(
             base_options=BaseOptions(model_asset_path=self.MODEL_PATH),
-            running_mode=mp.tasks.vision.RunningMode.IMAGE,
+            running_mode=mp.tasks.vision.RunningMode.VIDEO, 
             num_hands=1,
-            min_hand_detection_confidence=0.7,
-            min_hand_presence_confidence=0.7,
-            min_tracking_confidence=0.7
+            min_hand_detection_confidence=0.5, 
+            min_hand_presence_confidence=0.5,
+            min_tracking_confidence=0.5
         )
         self.landmarker = HandLandmarker.create_from_options(options)
 
@@ -69,7 +71,10 @@ class GestureAuthenticator:
         img = cv2.flip(img, 1)
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=img_rgb)
-        result = self.landmarker.detect(mp_image)
+        
+        # MUDANÇA AQUI: No modo vídeo, precisamos passar o timestamp atual em milissegundos
+        timestamp_ms = int(time.time() * 1000)
+        result = self.landmarker.detect_for_video(mp_image, timestamp_ms)
         
         hand_detected = bool(result.hand_landmarks)
         fingers_up_count = 0
